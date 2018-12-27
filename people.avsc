@@ -1,0 +1,29 @@
+{
+  "type" : "record",
+  "name" : "Person",
+  "namespace" : "com.test.avro",
+  "fields" : [ {
+    "name" : "name",
+    "type" : "string"
+  }, {
+    "name" : "age",
+    "type" : "long"
+  }, {
+    "name" : "address",
+    "nullable": true,
+    "default": null,
+    "type" : {
+      "type" : "record",
+      "name" : "address",
+      "fields" : [ {
+        "name" : "street",
+        "type" : "string",
+        "default": ""
+      }, {
+        "name" : "postal",
+        "type" : "long",
+        "default": 123456
+      } ]
+    }
+  } ]
+}
