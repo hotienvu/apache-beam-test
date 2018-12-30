@@ -3,6 +3,7 @@ package beamtest.examples;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.parquet.ParquetIO;
 import org.apache.beam.sdk.options.*;
@@ -77,7 +78,9 @@ public class ParquetWordCount {
             e.printStackTrace();
             System.exit(1);
         }
-        p.apply(ParquetIO.read(schema).from(options.getInputFile()))
+        p.apply(FileIO.match().filepattern(options.getInputFile()))
+                .apply(FileIO.readMatches())
+                .apply(ParquetIO.readFiles(schema))
                 .apply(ParDo.of(new DebugPrint()))
                 .apply(new CountName())
                 .apply(MapElements.via(new FormatAsTextFn()))
