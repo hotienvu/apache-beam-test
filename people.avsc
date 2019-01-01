@@ -10,9 +10,8 @@
     "type" : "long"
   }, {
     "name" : "address",
-    "nullable": true,
     "default": null,
-    "type" : {
+    "type" : ["null", {
       "type" : "record",
       "name" : "address",
       "fields" : [ {
@@ -24,6 +23,6 @@
         "type" : "long",
         "default": 123456
       } ]
-    }
+    }]
   } ]
 }
