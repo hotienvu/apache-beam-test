@@ -34,9 +34,8 @@ import java.io.InputStream;
  * other runners require additional setup and are out of scope of the SQL examples. Please consult
  * Beam documentation on how to run pipelines.
  */
-class BeamSqlExample {
+public class BeamSqlExample {
   private static org.apache.avro.Schema AVRO_SCHEMA;
-  private static Schema BEAM_SCHEMA;
 
   static {
     try (
@@ -46,11 +45,6 @@ class BeamSqlExample {
       e.printStackTrace();
       System.exit(1);
     }
-
-    BEAM_SCHEMA = Schema.builder()
-            .addStringField("name")
-            .addInt64Field("age")
-            .build();
   }
 
 

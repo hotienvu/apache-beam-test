@@ -31,8 +31,6 @@ public class AvroUtils {
     AVRO_BEAM_TYPES.put(Type.FLOAT, org.apache.beam.sdk.schemas.Schema.FieldType.FLOAT);
     AVRO_BEAM_TYPES.put(Type.DOUBLE, org.apache.beam.sdk.schemas.Schema.FieldType.DOUBLE);
     AVRO_BEAM_TYPES.put(Type.BOOLEAN, org.apache.beam.sdk.schemas.Schema.FieldType.BOOLEAN);
-
-
   }
   public static org.apache.beam.sdk.schemas.Schema avroToBeamSchema(Schema avroSchema) {
     // the result is guaranteed to be a Beam Schema

@@ -11,7 +11,7 @@
   }, {
     "name" : "address",
     "default": null,
-    "type" : ["null", {
+    "type" : {
       "type" : "record",
       "name" : "address",
       "fields" : [ {
@@ -23,6 +23,6 @@
         "type" : "long",
         "default": 123456
       } ]
-    }]
+    }
   } ]
 }

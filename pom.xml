@@ -124,6 +124,11 @@
             <version>${beam.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-sql-jdbc</artifactId>
+            <version>${beam.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.vavr</groupId>
