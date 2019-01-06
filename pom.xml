@@ -136,5 +136,23 @@
             <version>${vavr.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-runners-flink_2.11</artifactId>
+            <version>${beam.version}</version>
+        </dependency>
+
+        <!-- this is to fix javax.xml.parsers.FactoryConfigurationError-->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>2.7.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>
