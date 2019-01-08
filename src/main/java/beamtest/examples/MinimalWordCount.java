@@ -49,7 +49,6 @@ public class MinimalWordCount {
             return input.apply("Extract works", FlatMapElements.into(TypeDescriptors.strings())
                             .via(w -> Arrays.asList(w.split(SPLIT_REGEX_PATTERN))))
                     .apply(Filter.by(w -> !w.isEmpty()))
-                    .apply(ParDo.of(new FilterWordByLengthFn(3)))
                     .apply(Count.perElement());
         }
     }
@@ -64,6 +63,7 @@ public class MinimalWordCount {
         /** Set this required option to specify where to write the output. */
         @Description("Path of the file to write to")
         @Validation.Required
+        @Default.String("wordcounts")
         String getOutput();
 
         void setOutput(String value);

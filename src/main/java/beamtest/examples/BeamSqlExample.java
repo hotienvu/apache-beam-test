@@ -38,73 +38,71 @@ public class BeamSqlExample {
   }
 
 
-
   private static PCollection<Row> prepareData(Pipeline p, ParquetWordCount.WordCountOptions options) {
     //define the input row format
     Schema schema = AvroUtils.avroToBeamSchema(AVRO_SCHEMA);
     return p.apply(FileIO.match().filepattern(options.getInputFile()))
-            .apply(FileIO.readMatches())
-            .apply(ParquetIO.readFiles(AVRO_SCHEMA))
-            .apply(MapElements.via(new SimpleFunction<GenericRecord, Row>() {
-              @Override
-              public Row apply(GenericRecord input) {
-                String name = input.get("name").toString();
-                long age = (long) input.get("age");
-                return Row.withSchema(schema).addValues(name, age, null).build();
-              }
-            }))
-            .setRowSchema(schema);
+      .apply(FileIO.readMatches())
+      .apply(ParquetIO.readFiles(AVRO_SCHEMA))
+      .apply(MapElements.via(new SimpleFunction<GenericRecord, Row>() {
+        @Override
+        public Row apply(GenericRecord input) {
+          String name = input.get("name").toString();
+          long age = (long) input.get("age");
+          return Row.withSchema(schema).addValues(name, age, null).build();
+        }
+      }))
+      .setRowSchema(schema);
 
   }
 
   private static void queryData(PCollection<Row> inputTable) {
-    CubicIntegerFn cubicFn = new CubicIntegerFn();
     //Case 1. run a simple SQL query over input PCollection with BeamSql.simpleQuery;
     PCollection<Row> outputStream =
-            inputTable.apply(SqlTransform
-                    .query("select leftPad(name, 10, ' ') as name, cubic(age), age from PCOLLECTION where age >= 10")
-                    .registerUdf("leftPad", LeftPadStringFn.class)
-                    .registerUdf("cubic", new CubicIntegerFn()));
+      inputTable.apply(SqlTransform
+        .query("select leftPad(name, 10, ' ') as name, cubic(age), age from PCOLLECTION where age >= 10")
+        .registerUdf("leftPad", LeftPadStringFn.class)
+        .registerUdf("cubic", new CubicIntegerFn()));
 
     // print the output record of case 1;
     outputStream.apply(
-            "log_result",
-            MapElements.via(
-                    new SimpleFunction<Row, Void>() {
-                      @Override
-                      public @Nullable
-                      Void apply(Row input) {
-                        System.out.println("PCOLLECTION: " + input.getValues());
-                        return null;
-                      }
-                    }));
+      "log_result",
+      MapElements.via(
+        new SimpleFunction<Row, Void>() {
+          @Override
+          public @Nullable
+          Void apply(Row input) {
+            System.out.println("PCOLLECTION: " + input.getValues());
+            return null;
+          }
+        }));
 
     // Case 2. run the query with SqlTransform.query over result PCollection of case 1.
     PCollection<Row> outputStream2 =
-            PCollectionTuple.of(new TupleTag<>("CASE1_RESULT"), outputStream)
-                    .apply(SqlTransform
-                            .query("select  leftPad(trim(name), 10, '0'), sum(age) from CASE1_RESULT group by name")
-                            .registerUdf("leftPad", LeftPadStringFn.class));
+      PCollectionTuple.of(new TupleTag<>("CASE1_RESULT"), outputStream)
+        .apply(SqlTransform
+          .query("select  leftPad(trim(name), 10, '0'), sum(age) from CASE1_RESULT group by name")
+          .registerUdf("leftPad", LeftPadStringFn.class));
 
     // print the output record of case 2;
     outputStream2.apply(
-            "log_result",
-            MapElements.via(
-                    new SimpleFunction<Row, Void>() {
-                      @Override
-                      public @Nullable
-                      Void apply(Row input) {
-                        // expect output:
-                        //  CASE1_RESULT: [row, 5.0]
-                        System.out.println("CASE1_RESULT: " + input.getValues());
-                        return null;
-                      }
-                    }));
+      "log_result",
+      MapElements.via(
+        new SimpleFunction<Row, Void>() {
+          @Override
+          public @Nullable
+          Void apply(Row input) {
+            // expect output:
+            //  CASE1_RESULT: [row, 5.0]
+            System.out.println("CASE1_RESULT: " + input.getValues());
+            return null;
+          }
+        }));
   }
 
   public static void main(String[] args) {
     ParquetWordCount.WordCountOptions options = PipelineOptionsFactory.fromArgs(args)
-            .withValidation().as(ParquetWordCount.WordCountOptions.class);
+      .withValidation().as(ParquetWordCount.WordCountOptions.class);
     Pipeline p = Pipeline.create(options);
     PCollection<Row> inputTable = prepareData(p, options);
 
