@@ -1,2 +1,2 @@
-{"name": "Vu", "age": 20, "address": { "street": "12 SD RD", "postal": 123456 }},
-{"name": "Ho", "age": 21, "address": { "street": "Foo", "postal": 123456 }}
+{"id": 1, "name": "Alice", "age": 20, "address": { "street": "12 SD RD", "postal": 123456 }},
+{"id": 2, "name": "Bob", "age": 10, "address": { "street": "Foo", "postal": 123456 }}
