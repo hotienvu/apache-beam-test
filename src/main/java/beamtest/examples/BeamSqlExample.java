@@ -1,7 +1,6 @@
 package beamtest.examples;
 
 
-import beamtest.examples.common.AvroUtils;
 import beamtest.examples.udf.CubicIntegerFn;
 import beamtest.examples.udf.LeftPadStringFn;
 import org.apache.avro.generic.GenericRecord;
@@ -40,7 +39,7 @@ public class BeamSqlExample {
 
   private static PCollection<Row> prepareData(Pipeline p, ParquetWordCount.WordCountOptions options) {
     //define the input row format
-    Schema schema = AvroUtils.avroToBeamSchema(AVRO_SCHEMA);
+    Schema schema = org.apache.beam.sdk.schemas.utils.AvroUtils.toSchema(AVRO_SCHEMA);
     return p.apply(FileIO.match().filepattern(options.getInputFile()))
       .apply(FileIO.readMatches())
       .apply(ParquetIO.readFiles(AVRO_SCHEMA))
