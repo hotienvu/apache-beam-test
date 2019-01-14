@@ -10,6 +10,7 @@ import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.io.parquet.ParquetIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
+import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
@@ -39,7 +40,7 @@ public class BeamSqlExample {
 
   private static PCollection<Row> prepareData(Pipeline p, ParquetWordCount.WordCountOptions options) {
     //define the input row format
-    Schema schema = org.apache.beam.sdk.schemas.utils.AvroUtils.toSchema(AVRO_SCHEMA);
+    Schema schema = AvroUtils.toSchema(AVRO_SCHEMA);
     return p.apply(FileIO.match().filepattern(options.getInputFile()))
       .apply(FileIO.readMatches())
       .apply(ParquetIO.readFiles(AVRO_SCHEMA))
