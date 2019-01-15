@@ -45,16 +45,6 @@ public class StreamingSQL {
         .via(Row::toString))
       .apply(KafkaIOs.writeToKafka("test-output", "localhost:9092"));
 
-    // TODO: find out why using closure (Object::toString) throws Exception here
-    orders
-      .apply(MapElements.into(TypeDescriptors.strings()).via(it -> it.toString()))
-      .apply(KafkaIOs.writeToKafka("test-output", "localhost:9092"));
-
-    customer
-      .apply(MapElements.into(TypeDescriptors.strings()).via(it -> it.toString()))
-      .apply(KafkaIOs.writeToKafka("test-output", "localhost:9092"));
-
-
     pipeline.run().waitUntilFinish();
   }
 }

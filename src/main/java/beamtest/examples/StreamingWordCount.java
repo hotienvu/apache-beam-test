@@ -3,11 +3,12 @@ package beamtest.examples;
 import beamtest.examples.common.KafkaIOs;
 import beamtest.examples.common.KafkaOptions;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.options.*;
-import org.apache.beam.sdk.transforms.*;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
-import org.apache.beam.sdk.values.*;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.windowing.*;
+import org.apache.beam.sdk.values.TypeDescriptors;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -47,12 +48,12 @@ public class StreamingWordCount {
         }
       }))
       .apply(Window
-        .<String>into(FixedWindows.of(Duration.standardSeconds(10)))
-        .withAllowedLateness(Duration.standardSeconds(2))
-//        .triggering(AfterWatermark.pastEndOfWindow()
-//          .withEarlyFirings(AfterProcessingTime.pastFirstElementInPane())
-//          .withLateFirings(AfterProcessingTime.pastFirstElementInPane().plusDelayOf(Duration.standardSeconds(2)))
-//        )
+        .<String>into(SlidingWindows.of(Duration.standardHours(1)).every(Duration.standardMinutes(10)))
+        .withAllowedLateness(Duration.standardMinutes(5))
+        .triggering(AfterWatermark.pastEndOfWindow()
+          .withEarlyFirings(AfterPane.elementCountAtLeast(100))
+          .withLateFirings(AfterProcessingTime.pastFirstElementInPane().plusDelayOf(Duration.standardMinutes(1)))
+        )
         .accumulatingFiredPanes()
       )
 

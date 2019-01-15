@@ -3,7 +3,6 @@ package beamtest.examples;
 
 import beamtest.examples.udf.CubicIntegerFn;
 import beamtest.examples.udf.LeftPadStringFn;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.extensions.sql.SqlTransform;
 import org.apache.beam.sdk.io.FileIO;
@@ -13,10 +12,7 @@ import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.SimpleFunction;
-import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.PCollectionTuple;
-import org.apache.beam.sdk.values.Row;
-import org.apache.beam.sdk.values.TupleTag;
+import org.apache.beam.sdk.values.*;
 
 import javax.annotation.Nullable;
 import java.io.FileInputStream;
@@ -40,20 +36,13 @@ public class BeamSqlExample {
 
   private static PCollection<Row> prepareData(Pipeline p, ParquetWordCount.WordCountOptions options) {
     //define the input row format
-    Schema schema = AvroUtils.toSchema(AVRO_SCHEMA);
+    Schema beamSchema = AvroUtils.toSchema(AVRO_SCHEMA);
     return p.apply(FileIO.match().filepattern(options.getInputFile()))
       .apply(FileIO.readMatches())
       .apply(ParquetIO.readFiles(AVRO_SCHEMA))
-      .apply(MapElements.via(new SimpleFunction<GenericRecord, Row>() {
-        @Override
-        public Row apply(GenericRecord input) {
-          String name = input.get("name").toString();
-          long age = (long) input.get("age");
-          return Row.withSchema(schema).addValues(name, age, null).build();
-        }
-      }))
-      .setRowSchema(schema);
-
+      .apply(MapElements.into(TypeDescriptors.rows())
+        .via(it -> AvroUtils.toRowStrict(it, beamSchema)))
+      .setRowSchema(beamSchema);
   }
 
   private static void queryData(PCollection<Row> inputTable) {
