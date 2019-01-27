@@ -7,16 +7,116 @@
     <groupId>com</groupId>
     <artifactId>beamtest</artifactId>
     <version>1.0-SNAPSHOT</version>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <beam.version>2.9.0</beam.version>
         <slf4j.version>1.7.5</slf4j.version>
-        <spark.version>2.4.0</spark.version>
         <kafka.version>2.1.0</kafka.version>
         <vavr.version>0.9.2</vavr.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>spark24</id>
+            <properties>
+                <spark.version>2.4.0</spark.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>spark23</id>
+            <properties>
+                <spark.version>2.3.2</spark.version>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <!--shading conflicting Spark dependencies -->
+                                    <minimizeJar>false</minimizeJar>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>org.apache.parquet</pattern>
+                                            <shadedPattern>repackaged.org.apache.parquet</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>shaded.parquet</pattern>
+                                            <shadedPattern>repackaged.shaded.parquet</shadedPattern>
+                                        </relocation> <relocation>
+                                            <pattern>org.apache.avro</pattern>
+                                            <shadedPattern>repackaged.org.apache.avro</shadedPattern>
+                                        </relocation>
+                                    </relocations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>spark-runner</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.beam</groupId>
+                    <artifactId>beam-runners-spark</artifactId>
+                    <version>${beam.version}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.11</artifactId>
+                    <version>${spark.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming_2.11</artifactId>
+                    <version>${spark.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>flink-runner</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.beam</groupId>
+                    <artifactId>beam-runners-flink_2.11</artifactId>
+                    <version>${beam.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <!-- this is to fix javax.xml.parsers.FactoryConfigurationError-->
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-hdfs</artifactId>
+                    <version>2.7.3</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>xml-apis</groupId>
+                            <artifactId>xml-apis</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 
     <build>
         <plugins>
@@ -56,6 +156,7 @@
             </plugin>
         </plugins>
     </build>
+
 
     <dependencies>
         <dependency>
@@ -101,23 +202,7 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-spark</artifactId>
-            <version>${beam.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.11</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -135,12 +220,6 @@
             <groupId>io.vavr</groupId>
             <artifactId>vavr</artifactId>
             <version>${vavr.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-flink_2.11</artifactId>
-            <version>${beam.version}</version>
         </dependency>
 
         <dependency>
