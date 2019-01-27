@@ -10,7 +10,6 @@ import org.apache.beam.sdk.options.*;
 import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TypeDescriptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +44,15 @@ public class ParquetWordCount {
   static class CountName extends PTransform<PCollection<GenericRecord>, PCollection<KV<String, Long>>> {
     @Override
     public PCollection<KV<String, Long>> expand(PCollection<GenericRecord> input) {
-      return input.apply(MapElements.into(TypeDescriptors.strings())
-              .via(w -> w.get("name").toString()))
-              .apply(Filter.by(w -> !w.isEmpty()))
-              .apply(Count.perElement());
+      return input
+        .apply(MapElements.via(new SimpleFunction<GenericRecord, String>() {
+          @Override
+          public String apply(GenericRecord input) {
+            return input.get("name").toString();
+          }
+        }))
+        .apply(Filter.by(w -> !w.isEmpty()))
+        .apply(Count.perElement());
     }
   }
 
@@ -72,7 +76,7 @@ public class ParquetWordCount {
 
   public static void main(String[] args) {
     WordCountOptions options = PipelineOptionsFactory.fromArgs(args)
-            .withValidation().as(WordCountOptions.class);
+      .withValidation().as(WordCountOptions.class);
 
     Pipeline p = Pipeline.create(options);
     Schema schema = null;
@@ -83,12 +87,12 @@ public class ParquetWordCount {
       System.exit(1);
     }
     p.apply(FileIO.match().filepattern(options.getInputFile()))
-            .apply(FileIO.readMatches())
-            .apply(ParquetIO.readFiles(schema))
-            .apply(ParDo.of(new DebugPrint()))
-            .apply(new CountName())
-            .apply(MapElements.via(new FormatAsTextFn()))
-            .apply(TextIO.write().to(options.getOutput()));
+      .apply(FileIO.readMatches())
+      .apply(ParquetIO.readFiles(schema))
+      .apply(ParDo.of(new DebugPrint()))
+      .apply(new CountName())
+      .apply(MapElements.via(new FormatAsTextFn()))
+      .apply(TextIO.write().to(options.getOutput()));
 
     p.run().waitUntilFinish();
     System.out.println("waiting for result");
